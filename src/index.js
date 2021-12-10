@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-const bankOne = [
+const soundBank = [
   {
     keyCode: 81,
     keyTrigger: 'Q',
@@ -60,14 +60,59 @@ const bankOne = [
 ];
 
 const App = () => {
+  const soundContainer = React.useRef(null);
+  const [soundPlayed, setSoundPlayed] = React.useState('');
+
   React.useEffect(() => {
     window.addEventListener('keydown', handleKeyPressed);
   }, []);
 
   const handleKeyPressed = (e) => {
-    console.log(e.keyCode);
+    const allSounds = [...soundContainer.current.children];
+    allSounds.forEach((item) => {
+      if (Number(item.dataset.label) === e.keyCode) {
+        item.classList.add('active');
+        setSoundPlayed(item.id);
+        const sound = item.children[1];
+        sound.play();
+        setTimeout(() => {
+          item.classList.remove('active');
+        }, 100);
+      }
+    });
   };
-  return <h1>hello world</h1>;
+
+  const playSound = (e) => {
+    const item = e.currentTarget;
+    setSoundPlayed(item.id);
+    const sound = item.children[1];
+    sound.play();
+  };
+
+  return (
+    <section id="drum-machine">
+      <div className="drum-pad-container" ref={soundContainer}>
+        {soundBank.map((sound) => {
+          const { keyCode, keyTrigger, id, url } = sound;
+          return (
+            <div
+              className="drum-pad"
+              id={id}
+              key={keyCode}
+              data-label={keyCode}
+              onClick={playSound}
+            >
+              <h2>{keyTrigger}</h2>
+              <audio src={url} className="clip" id={keyTrigger}></audio>
+            </div>
+          );
+        })}
+      </div>
+      <div className="display-container" id="display">
+        <h3>{soundPlayed}</h3>
+      </div>
+    </section>
+  );
 };
 
 ReactDOM.render(
